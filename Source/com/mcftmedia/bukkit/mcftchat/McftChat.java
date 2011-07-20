@@ -27,7 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Built on Permissions 3
  * 
  * @author Jon la Cour
- * @version 1.0
+ * @version 1.1
  */
 public class McftChat extends JavaPlugin {
 
@@ -117,10 +117,22 @@ public class McftChat extends JavaPlugin {
                         if (player != null) {
                             String worldname = player.getLocation().getWorld().getName();
                             String group = permissionHandler.getGroupProperName(pname, worldname);
-                            int prefix = Integer.parseInt(userPrefix(group, worldname).replace("&", ""));
-                            ChatColor usercolor = ChatColor.getByCode(prefix);
-                            // String suffix = userSuffix(group, worldname);
-                            sendername = usercolor + "[" + pname + "]";
+                            String prefix = userPrefix(group, worldname);
+                            if (prefix != null) {
+                                int prefixcolor = Integer.parseInt(userPrefix(group, worldname).replace("&", ""));
+                                ChatColor usercolor = ChatColor.getByCode(prefixcolor);
+                                sendername = usercolor + "[" + pname + "]";
+                            } else {
+                                String groupprefix = groupPrefix(group, worldname).replace("&", "");
+                                if (!groupprefix.isEmpty()) {
+                                    int prefixcolor = Integer.parseInt(groupprefix);
+                                    ChatColor usercolor = ChatColor.getByCode(prefixcolor);
+                                    sendername = usercolor + "[" + pname + "]";
+                                } else {
+                                    ChatColor usercolor = ChatColor.WHITE;
+                                    sendername = usercolor + "[" + pname + "]";
+                                }
+                            }
                         }
                         String channel = settings.get(command);
                         ChatColor color = ChatColor.valueOf(colorconfig.get(channel));
@@ -249,6 +261,14 @@ public class McftChat extends JavaPlugin {
 
     private String userPrefix(String groupname, String worldname) {
         String prefix = permissionHandler.getUserPrefix(worldname, groupname);
+        if (prefix == null) {
+            prefix = "";
+        }
+        return prefix;
+    }
+    
+    private String groupPrefix(String groupname, String worldname) {
+        String prefix = permissionHandler.getGroupRawPrefix(worldname, groupname);
         if (prefix == null) {
             prefix = "";
         }
