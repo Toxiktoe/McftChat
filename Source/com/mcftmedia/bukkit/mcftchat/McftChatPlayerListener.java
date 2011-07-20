@@ -1,6 +1,5 @@
 package com.mcftmedia.bukkit.mcftchat;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerListener;
