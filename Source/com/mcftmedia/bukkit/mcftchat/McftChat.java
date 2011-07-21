@@ -1,5 +1,7 @@
 package com.mcftmedia.bukkit.mcftchat;
 
+import com.nijiko.permissions.Entry;
+import com.nijiko.permissions.Group;
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import java.io.BufferedReader;
@@ -27,7 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Built on Permissions 3
  * 
  * @author Jon la Cour
- * @version 1.2
+ * @version 1.3
  */
 public class McftChat extends JavaPlugin {
 
@@ -116,9 +118,9 @@ public class McftChat extends JavaPlugin {
                         String sendername = pname;
                         if (player != null) {
                             String worldname = player.getLocation().getWorld().getName();
-                            String group = permissionHandler.getPrimaryGroup(pname, worldname);
+                            String group = getGroup(worldname, pname);
                             String prefix = groupPrefix(group, worldname);
-                            if (!prefix.equals("")) {
+                            if (!prefix.equals("") || prefix != null) {
                                 String prefixid = prefix.replace("&", "");
                                 int prefixcolor = Integer.parseInt(prefixid);
                                 ChatColor usercolor = ChatColor.getByCode(prefixcolor);
@@ -251,6 +253,15 @@ public class McftChat extends JavaPlugin {
             newarray[i + 1] = array[i];
         }
         return newarray;
+    }
+
+    private String getGroup(String world, String player) {
+        Entry entry = permissionHandler.getUserObject(world, player).getParents().iterator().next();
+        if (entry instanceof Group) {
+            return ((Group) entry).getName();
+        } else {
+            return null;
+        }
     }
 
     private String groupPrefix(String groupname, String worldname) {
