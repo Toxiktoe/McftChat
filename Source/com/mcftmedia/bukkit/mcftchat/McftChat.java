@@ -29,7 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Built on Permissions 3
  * 
  * @author Jon la Cour
- * @version 1.3.1
+ * @version 1.3.2
  */
 public class McftChat extends JavaPlugin {
 
@@ -121,10 +121,12 @@ public class McftChat extends JavaPlugin {
                             String group = getGroup(worldname, pname);
                             String prefix = groupPrefix(group, worldname);
                             if (!prefix.equals("") || prefix != null) {
-                                String prefixid = prefix.replace("&", "");
-                                int prefixcolor = Integer.parseInt(prefixid);
-                                ChatColor usercolor = ChatColor.getByCode(prefixcolor);
-                                sendername = usercolor + "[" + pname + "]";
+                                String prefixcolor = prefix.replace("&", "");
+                                if (prefixcolor.length() == 1) {
+                                    int prefixid = Integer.parseInt(getColor(prefixcolor));
+                                    ChatColor usercolor = ChatColor.getByCode(prefixid);
+                                    sendername = usercolor + "[" + pname + "]";
+                                }
                             } else {
                                 ChatColor usercolor = ChatColor.WHITE;
                                 sendername = usercolor + "[" + pname + "]";
@@ -138,7 +140,7 @@ public class McftChat extends JavaPlugin {
                                 p.sendMessage(sendername + color + message);
                             }
                         }
-                        logger.info(pname + "->" + channel + ": " + message);
+                        logger.info(pname + "->" + channel + ":" + message);
                         return true;
                     } else {
                         logger.info("[McftChat] Permission denied for '" + command + "': " + pname);
@@ -278,5 +280,35 @@ public class McftChat extends JavaPlugin {
             suffix = "";
         }
         return suffix;
+    }
+
+    private String getColor(String color) {
+        if (isInt(color)) {
+            return color;
+        } else {
+            if (color.equalsIgnoreCase("a")) {
+                return "10";
+            } else if (color.equalsIgnoreCase("b")) {
+                return "11";
+            } else if (color.equalsIgnoreCase("c")) {
+                return "12";
+            } else if (color.equalsIgnoreCase("d")) {
+                return "13";
+            } else if (color.equalsIgnoreCase("e")) {
+                return "14";
+            } else if (color.equalsIgnoreCase("f")) {
+                return "15";
+            }
+            return null;
+        }
+    }
+
+    private boolean isInt(String i) {
+        try {
+            Integer.parseInt(i);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 }
