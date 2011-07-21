@@ -29,7 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Built on Permissions 3
  * 
  * @author Jon la Cour
- * @version 1.3
+ * @version 1.3.1
  */
 public class McftChat extends JavaPlugin {
 
@@ -40,8 +40,8 @@ public class McftChat extends JavaPlugin {
     public static PermissionHandler permissionHandler;
     public static final Logger logger = Logger.getLogger("Minecraft.McftChat");
     String baseDir = "plugins/McftChat";
-    String configFile = "settings.conf";
-    String colorconfigFile = "colors.conf";
+    String configFile = "settings.txt";
+    String colorconfigFile = "colors.txt";
 
     @Override
     public void onDisable() {
@@ -170,7 +170,7 @@ public class McftChat extends JavaPlugin {
         configfile = new File(config);
         if (!configfile.exists()) {
             BufferedWriter output;
-            String newline = System.getProperty("line.seperator");
+            String newline = System.getProperty("line.separator");
             try {
                 output = new BufferedWriter(new FileWriter(config));
                 output.write("# Command=Channel" + newline);
@@ -189,7 +189,7 @@ public class McftChat extends JavaPlugin {
         colorsfile = new File(colors);
         if (!colorsfile.exists()) {
             BufferedWriter output;
-            String newline = System.getProperty("line.seperator");
+            String newline = System.getProperty("line.separator");
             try {
                 output = new BufferedWriter(new FileWriter(colors));
                 output.write("# Channel=COLOR" + newline);
