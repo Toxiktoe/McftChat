@@ -1,7 +1,5 @@
 package com.mcftmedia.bukkit.mcftchat;
 
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,6 +9,7 @@ import java.io.FileWriter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,11 +21,14 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.nijiko.permissions.PermissionHandler;
+import com.nijikokun.bukkit.Permissions.Permissions;
+
 /**
- * McftChat plugin for Bukkit that allows for chat channels
+ * McftChat is a Bukkit plugin for simple and clean chat channels
  * 
  * @author Jon la Cour
- * @version 1.3.2
+ * @version 1.3.4
  */
 public class McftChat extends JavaPlugin {
 
@@ -37,7 +39,7 @@ public class McftChat extends JavaPlugin {
     public static PermissionHandler permissionHandler;
     public static final Logger logger = Logger.getLogger("Minecraft.McftChat");
     String baseDir = "plugins/McftChat";
-    String configFile = "settings.txt";
+    String configFile = "channels.txt";
     String colorconfigFile = "colors.txt";
 
     @Override
@@ -150,32 +152,25 @@ public class McftChat extends JavaPlugin {
     }
 
     private void checkSettings() {
-        String config = "";
-        String colors = "";
-        File configfile;
-        File colorsfile;
-
         // Creates base directory for config files
-        config = baseDir;
-        configfile = new File(config);
-        if (!configfile.exists()) {
-            if (configfile.mkdir()) {
-                logger.info("[McftChat] Created directory '" + config + "'");
+        File folder = new File(baseDir);
+        if (!folder.exists()) {
+            if (folder.mkdir()) {
+                logger.info("[McftChat] Created directory '" + baseDir + "'");
             }
         }
 
         // Creates base config file
-        config = baseDir + "/" + configFile;
-        configfile = new File(config);
+        String config = baseDir + "/" + configFile;
+        File configfile = new File(config);
         if (!configfile.exists()) {
             BufferedWriter output;
             String newline = System.getProperty("line.separator");
             try {
                 output = new BufferedWriter(new FileWriter(config));
-                output.write("# Command=Channel" + newline);
-                output.write("o=Owners" + newline);
-                output.write("a=Admins" + newline);
-                output.write("d=Donators" + newline);
+                output.write("# Command = Channel" + newline);
+                output.write("a = Admins" + newline);
+                output.write("b = Builders" + newline);
                 output.close();
                 logger.info("[McftChat] Created config file '" + config + "'");
             } catch (Exception e) {
@@ -184,18 +179,17 @@ public class McftChat extends JavaPlugin {
         }
 
         // Creates colors config file
-        colors = baseDir + "/" + colorconfigFile;
-        colorsfile = new File(colors);
+        String colors = baseDir + "/" + colorconfigFile;
+        File colorsfile = new File(colors);
         if (!colorsfile.exists()) {
             BufferedWriter output;
             String newline = System.getProperty("line.separator");
             try {
                 output = new BufferedWriter(new FileWriter(colors));
-                output.write("# Channel=COLOR" + newline);
-                output.write("# Available colors: http://jd.bukkit.org/apidocs/org/bukkit/ChatColor.html" + newline);
-                output.write("Owners=GOLD" + newline);
-                output.write("Admins=LIGHT_PURPLE" + newline);
-                output.write("Donators=DARK_AQUA" + newline);
+                output.write("# Channel = CHAT_COLOR" + newline);
+                output.write("# Available colors: https://minepedia.net/colorguide.php (Bukkit Plugin section)" + newline);
+                output.write("Admins = LIGHT_PURPLE" + newline);
+                output.write("Builders = DARK_AQUA" + newline);
                 output.close();
                 logger.info("[McftChat] Created colors config file '" + colors + "'");
             } catch (Exception e) {
@@ -210,29 +204,27 @@ public class McftChat extends JavaPlugin {
         String line = null;
 
         // Adds default channels to settings map
-        settings.put("o", "Owners");
         settings.put("a", "Admins");
-        settings.put("d", "Donators");
+        settings.put("b", "Builders");
 
         // Adds default colors to colors map
-        colorconfig.put("Owners", "GOLD");
         colorconfig.put("Admins", "LIGHT_PURPLE");
-        colorconfig.put("Donators", "DARK_AQUA");
+        colorconfig.put("Builders", "DARK_AQUA");
 
         try {
             BufferedReader configuration = new BufferedReader(new FileReader(config));
             while ((line = configuration.readLine()) != null) {
                 line = line.trim();
-                if (!line.startsWith("#") && line.contains("=")) {
-                    String[] pair = line.split("=", 2);
+                if (!line.startsWith("#") && line.contains(" = ")) {
+                    String[] pair = line.split(" = ", 2);
                     settings.put(pair[0], pair[1]);
                 }
             }
             BufferedReader colorconfiguration = new BufferedReader(new FileReader(colors));
             while ((line = colorconfiguration.readLine()) != null) {
                 line = line.trim();
-                if (!line.startsWith("#") && line.contains("=")) {
-                    String[] pair = line.split("=", 2);
+                if (!line.startsWith("#") && line.contains(" = ")) {
+                    String[] pair = line.split(" = ", 2);
                     colorconfig.put(pair[0], pair[1]);
                 }
             }
