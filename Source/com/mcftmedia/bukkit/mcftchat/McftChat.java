@@ -23,8 +23,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * McftChat plugin for Bukkit
- * Built on Permissions 3
+ * McftChat plugin for Bukkit that allows for chat channels
  * 
  * @author Jon la Cour
  * @version 1.3.2
