@@ -1,4 +1,6 @@
 # McftChat
+_Production Build v1.3.4_
+
 McftChat is a Bukkit server plugin for Minecraft that allows you to create chat channels for groups. McftChat integrates with Permissions for user groups.
 
 This was made to suit the needs of the World of Minecraft server.
