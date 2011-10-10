@@ -5,9 +5,10 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerListener;
 
 /**
- * Handles player events
+ * McftChat player listener for command processing
  * 
- * @author Jon
+ * @author      Jon la Cour
+ * @version     1.3.4
  */
 public class McftChatPlayerListener extends PlayerListener {
 
@@ -19,19 +20,11 @@ public class McftChatPlayerListener extends PlayerListener {
 
     @Override
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-
-        // when someone uses /help command, change it to /me is stupid!
-        //System.out.println("[MC] preprocessing "+event.getMessage());
-        // split the command
         String[] args = event.getMessage().split(" ", 2);
-
         if (args.length > 1) {
             String cmd = args[0];
-            //System.out.println("[MC] cmd = "+cmd);
             for (String channel : plugin.settings.keySet()) {
-                //System.out.println("[MC] channel = "+channel);
                 if (cmd.equalsIgnoreCase("/" + channel)) {
-                    //System.out.println("[MC] matched");
                     event.setCancelled(true);
                     Player p = event.getPlayer();
                     if (p != null) {
