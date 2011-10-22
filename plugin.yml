@@ -1,6 +1,6 @@
 name: McftChat
-main: com.mcftmedia.bukkit.mcftchat.McftChat
-version: 1.3.4
+main: im.mcft.mcftchat.McftChat
+version: 1.3.5
 author: laCour
 description: >
              Allows you to send messages to channels
