@@ -1,6 +1,4 @@
-build
-dist
-nbproject
-build.xml
-manifest.mf
-*.jar
+/bin/
+/target/
+.classpath
+.project
