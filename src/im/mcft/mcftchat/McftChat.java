@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,10 +26,11 @@ import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 /**
- * McftChat is a Bukkit plugin for simple and clean chat channels
+ * McftChat allows you to have clean and easy to set up chat channels for your
+ * Bukkit server.
  * 
  * @author Jon la Cour
- * @version 1.3.4
+ * @version 1.3.5
  */
 public class McftChat extends JavaPlugin {
 
@@ -36,26 +38,37 @@ public class McftChat extends JavaPlugin {
 	private final ConcurrentHashMap<Player, Boolean> debugees = new ConcurrentHashMap<Player, Boolean>();
 	public final ConcurrentHashMap<String, String> settings = new ConcurrentHashMap<String, String>();
 	public final ConcurrentHashMap<String, String> colorconfig = new ConcurrentHashMap<String, String>();
+	public static HashMap<String, String> toggled = new HashMap<String, String>();
 	public static PermissionHandler permissionHandler;
 	public static final Logger logger = Logger.getLogger("Minecraft.McftChat");
-	String baseDir = "plugins/McftChat";
-	String configFile = "channels.txt";
-	String colorconfigFile = "colors.txt";
+	public boolean log = true;
+	public String baseDir = "plugins/McftChat";
+	public String configFile = "channels.txt";
+	public String colorconfigFile = "colors.txt";
 
 	@Override
-	public void onDisable() {
+	public final void onDisable() {
 		PluginDescriptionFile pdfFile = this.getDescription();
 		logger.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is disabled!");
 	}
 
 	@Override
-	public void onEnable() {
+	public final void onEnable() {
+		// Settings
 		checkSettings();
-		setupPermissions();
 		loadSettings();
+
+		// Permissions
+		setupPermissions();
+
+		Plugin commandsLogging = this.getServer().getPluginManager().getPlugin("Commands Logging");
+		if (commandsLogging != null) {
+			this.log = false;
+		}
 
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Lowest, this);
+		pm.registerEvent(Event.Type.PLAYER_CHAT, playerListener, Priority.High, this);
 
 		PluginDescriptionFile pdfFile = this.getDescription();
 		logger.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled!");
@@ -73,6 +86,12 @@ public class McftChat extends JavaPlugin {
 		debugees.put(player, value);
 	}
 
+	/**
+	 * This makes sure that a permissions plugin is available. If not it will
+	 * disable the plugin.
+	 * 
+	 * @since 1.0.0
+	 */
 	public void setupPermissions() {
 		if (permissionHandler != null) {
 			return;
@@ -90,7 +109,7 @@ public class McftChat extends JavaPlugin {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+	public final boolean onCommand(final CommandSender sender, final Command cmd, final String commandLabel, String[] args) {
 		String cmdname = cmd.getName().toLowerCase();
 		Player player = null;
 		String pname = ChatColor.DARK_RED + "[Console]";
@@ -127,14 +146,29 @@ public class McftChat extends JavaPlugin {
 							}
 						}
 						String channel = settings.get(command);
-						ChatColor color = ChatColor.valueOf(colorconfig.get(channel));
-						Player[] players = getServer().getOnlinePlayers();
-						for (Player p : players) {
-							if (permissionHandler.permission(p, "mcftchat." + command + ".receive")) {
-								p.sendMessage(sendername + color + message);
+						if (message.contains("-on")) {
+							if (toggled.containsKey(pname)) {
+								player.sendMessage(ChatColor.GOLD + "The " + channel + " channel is already toggled on! Say '-off' to toggle off.");
+							} else {
+								toggled.put(pname, command);
+								player.sendMessage(ChatColor.GOLD + "The " + channel + " channel is now toggled on! Say '-off' to toggle off.");
+							}
+						} else {
+							ChatColor color = ChatColor.valueOf(colorconfig.get(channel));
+							Player[] players = getServer().getOnlinePlayers();
+							for (Player p : players) {
+								if (permissionHandler.permission(p, "mcftchat." + command + ".receive")) {
+									p.sendMessage(sendername + color + message);
+								}
 							}
 						}
-						logger.info(pname + "->" + channel + ":" + message);
+						if (log) {
+							if (message.contains("-on")) {
+								logger.info(pname + "->" + channel + " [Toggled on chat]");
+							} else {
+								logger.info(pname + "->" + channel + ":" + message);
+							}
+						}
 						return true;
 					} else {
 						logger.info("[McftChat] Permission denied for '" + command + "': " + pname);
@@ -146,6 +180,12 @@ public class McftChat extends JavaPlugin {
 		return false;
 	}
 
+	/**
+	 * This makes sure that the settings directory exists and creates the
+	 * default settings file if one is not present.
+	 * 
+	 * @since 1.0.0
+	 */
 	private void checkSettings() {
 		// Creates base directory for config files
 		File folder = new File(baseDir);
@@ -193,6 +233,11 @@ public class McftChat extends JavaPlugin {
 		}
 	}
 
+	/**
+	 * This loads all settings into a HashMap.
+	 * 
+	 * @since 1.0.0
+	 */
 	private void loadSettings() {
 		String config = baseDir + "/" + configFile;
 		String colors = baseDir + "/" + colorconfigFile;
@@ -233,7 +278,7 @@ public class McftChat extends JavaPlugin {
 		}
 	}
 
-	private String[] unshift(String str, String[] array) {
+	private String[] unshift(final String str, final String[] array) {
 		String[] newarray = new String[array.length + 1];
 		newarray[0] = str;
 		for (Integer i = 0; i < array.length; i++) {
@@ -242,7 +287,7 @@ public class McftChat extends JavaPlugin {
 		return newarray;
 	}
 
-	private String groupPrefix(String groupname, String worldname) {
+	private String groupPrefix(final String groupname, final String worldname) {
 		String prefix = permissionHandler.getGroupPrefix(worldname, groupname);
 		if (prefix == null) {
 			prefix = "";
@@ -250,7 +295,7 @@ public class McftChat extends JavaPlugin {
 		return prefix;
 	}
 
-	private String getColor(String color) {
+	private String getColor(final String color) {
 		if (isInt(color)) {
 			return color;
 		} else {
@@ -271,7 +316,7 @@ public class McftChat extends JavaPlugin {
 		}
 	}
 
-	private boolean isInt(String i) {
+	private boolean isInt(final String i) {
 		try {
 			Integer.parseInt(i);
 			return true;
