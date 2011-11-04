@@ -30,7 +30,7 @@ import com.nijikokun.bukkit.Permissions.Permissions;
  * Bukkit server.
  * 
  * @author Jon la Cour
- * @version 1.3.5
+ * @version 1.3.6
  */
 public class McftChat extends JavaPlugin {
 
@@ -205,7 +205,7 @@ public class McftChat extends JavaPlugin {
 				output = new BufferedWriter(new FileWriter(config));
 				output.write("# Command = Channel" + newline);
 				output.write("a = Admins" + newline);
-				output.write("b = Builders" + newline);
+				output.write("d = Donators" + newline);
 				output.close();
 				logger.info("[McftChat] Created config file '" + config + "'");
 			} catch (Exception e) {
@@ -224,7 +224,7 @@ public class McftChat extends JavaPlugin {
 				output.write("# Channel = CHAT_COLOR" + newline);
 				output.write("# Available colors: https://minepedia.net/colorguide.php (Bukkit Plugin section)" + newline);
 				output.write("Admins = LIGHT_PURPLE" + newline);
-				output.write("Builders = DARK_AQUA" + newline);
+				output.write("Donators = DARK_AQUA" + newline);
 				output.close();
 				logger.info("[McftChat] Created colors config file '" + colors + "'");
 			} catch (Exception e) {
@@ -242,14 +242,6 @@ public class McftChat extends JavaPlugin {
 		String config = baseDir + "/" + configFile;
 		String colors = baseDir + "/" + colorconfigFile;
 		String line = null;
-
-		// Adds default channels to settings map
-		settings.put("a", "Admins");
-		settings.put("b", "Builders");
-
-		// Adds default colors to colors map
-		colorconfig.put("Admins", "LIGHT_PURPLE");
-		colorconfig.put("Builders", "DARK_AQUA");
 
 		try {
 			BufferedReader configuration = new BufferedReader(new FileReader(config));
