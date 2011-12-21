@@ -30,7 +30,7 @@ import com.nijikokun.bukkit.Permissions.Permissions;
  * Bukkit server.
  * 
  * @author Jon la Cour
- * @version 1.3.6
+ * @version 1.3.7
  */
 public class McftChat extends JavaPlugin {
 
@@ -38,12 +38,14 @@ public class McftChat extends JavaPlugin {
 	private final ConcurrentHashMap<Player, Boolean> debugees = new ConcurrentHashMap<Player, Boolean>();
 	public final ConcurrentHashMap<String, String> settings = new ConcurrentHashMap<String, String>();
 	public final ConcurrentHashMap<String, String> colorconfig = new ConcurrentHashMap<String, String>();
+	public final ConcurrentHashMap<String, String> tagconfig = new ConcurrentHashMap<String, String>();
 	public static HashMap<String, String> toggled = new HashMap<String, String>();
 	public static PermissionHandler permissionHandler;
 	public static final Logger logger = Logger.getLogger("Minecraft.McftChat");
 	public boolean log = true;
 	public String baseDir = "plugins/McftChat";
 	public String configFile = "channels.txt";
+	public String tagFile = "tags.txt";
 	public String colorconfigFile = "colors.txt";
 
 	@Override
@@ -71,7 +73,8 @@ public class McftChat extends JavaPlugin {
 		pm.registerEvent(Event.Type.PLAYER_CHAT, playerListener, Priority.High, this);
 
 		PluginDescriptionFile pdfFile = this.getDescription();
-		logger.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled!");
+		logger.info("[McftChat] Loaded " + settings.size() + " chat channels.");
+		logger.info("[McftChat] Version " + pdfFile.getVersion() + " enabled");
 	}
 
 	public boolean isDebugging(final Player player) {
@@ -105,7 +108,11 @@ public class McftChat extends JavaPlugin {
 		}
 
 		permissionHandler = ((Permissions) permissionsPlugin).getHandler();
-		logger.info("[McftChat] Found and will use plugin " + ((Permissions) permissionsPlugin).getDescription().getFullName());
+		String plugin = ((Permissions) permissionsPlugin).getDescription().getFullName();
+		if (plugin.equals("Permissions v2.7.7")) {
+			plugin = "PermissionsEx";
+		}
+		logger.info("[McftChat] Hooked into " + plugin + ".");
 	}
 
 	@Override
@@ -133,6 +140,14 @@ public class McftChat extends JavaPlugin {
 			for (String command : settings.keySet()) {
 				if (args[0].equalsIgnoreCase(command)) {
 					if (player == null || permissionHandler.permission(player, "mcftchat." + command + ".send")) {
+						String channel = settings.get(command);
+						boolean usetag = true;
+						String tag = "[" + tagconfig.get(channel) + "] ";
+						if (tag.equals("[null] ") || tag.equals("[off] ")) {
+							usetag = false;
+						}
+						ChatColor color = ChatColor.valueOf(colorconfig.get(channel));
+						String channeltag = color + tag;
 						String sendername = pname;
 						if (player != null) {
 							String worldname = player.getLocation().getWorld().getName();
@@ -145,7 +160,6 @@ public class McftChat extends JavaPlugin {
 								sendername = usercolor + "[" + pname + "]";
 							}
 						}
-						String channel = settings.get(command);
 						if (message.contains("-on")) {
 							if (toggled.containsKey(pname)) {
 								player.sendMessage(ChatColor.GOLD + "The " + channel + " channel is already toggled on! Say '-off' to toggle off.");
@@ -154,11 +168,14 @@ public class McftChat extends JavaPlugin {
 								player.sendMessage(ChatColor.GOLD + "The " + channel + " channel is now toggled on! Say '-off' to toggle off.");
 							}
 						} else {
-							ChatColor color = ChatColor.valueOf(colorconfig.get(channel));
 							Player[] players = getServer().getOnlinePlayers();
 							for (Player p : players) {
 								if (permissionHandler.permission(p, "mcftchat." + command + ".receive")) {
-									p.sendMessage(sendername + color + message);
+									if (usetag) {
+										p.sendMessage(channeltag + sendername + color + message);
+									} else {
+										p.sendMessage(sendername + color + message);
+									}
 								}
 							}
 						}
@@ -231,6 +248,26 @@ public class McftChat extends JavaPlugin {
 				Logger.getLogger(McftChat.class.getName()).log(Level.SEVERE, null, e);
 			}
 		}
+
+		// Creates tag config file
+		String tag = baseDir + "/" + tagFile;
+		File tagfile = new File(tag);
+		if (!tagfile.exists()) {
+			BufferedWriter output;
+			String newline = System.getProperty("line.separator");
+			try {
+				output = new BufferedWriter(new FileWriter(tag));
+				output.write("# Channel = Tag" + newline);
+				output.write("# This adds a tag before channel messages (i.e. [Admins] [laCour] Hello!)" + newline);
+				output.write("# Put off if you do not want a channel tag for a channel. (i.e. Admins = off)" + newline);
+				output.write("Admins = Staff" + newline);
+				output.write("Donators = off" + newline);
+				output.close();
+				logger.info("[McftChat] Created tag config file '" + tag + "'");
+			} catch (Exception e) {
+				Logger.getLogger(McftChat.class.getName()).log(Level.SEVERE, null, e);
+			}
+		}
 	}
 
 	/**
@@ -241,6 +278,7 @@ public class McftChat extends JavaPlugin {
 	private void loadSettings() {
 		String config = baseDir + "/" + configFile;
 		String colors = baseDir + "/" + colorconfigFile;
+		String tag = baseDir + "/" + tagFile;
 		String line = null;
 
 		try {
@@ -258,6 +296,14 @@ public class McftChat extends JavaPlugin {
 				if (!line.startsWith("#") && line.contains(" = ")) {
 					String[] pair = line.split(" = ", 2);
 					colorconfig.put(pair[0], pair[1]);
+				}
+			}
+			BufferedReader tagconfiguration = new BufferedReader(new FileReader(tag));
+			while ((line = tagconfiguration.readLine()) != null) {
+				line = line.trim();
+				if (!line.startsWith("#") && line.contains(" = ")) {
+					String[] pair = line.split(" = ", 2);
+					tagconfig.put(pair[0], pair[1]);
 				}
 			}
 		} catch (FileNotFoundException e) {
