@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerListener;
  * McftProfiler handler for all player related events.
  * 
  * @author Jon la Cour
- * @version 1.3.5
+ * @version 1.3.7
  */
 public class McftChatPlayerListener extends PlayerListener {
 
@@ -60,6 +60,7 @@ public class McftChatPlayerListener extends PlayerListener {
 				p.sendMessage(ChatColor.GOLD + "The " + channel + " channel has been toggled off.");
 				logger.info(name + "->" + channel + " [Toggled off chat]");
 				event.setCancelled(true);
+				event.setMessage("");
 			} else {
 				String command = toggled.get(name);
 				p.chat("/mcftchat " + command + " " + message);
