@@ -112,7 +112,7 @@ public class McftChat extends JavaPlugin {
 		if (plugin.equals("Permissions v2.7.7")) {
 			plugin = "PermissionsEx";
 		}
-		logger.info("[McftChat] Hooked into " + plugin + ".");
+		logger.info("[McftChat] Derped into " + plugin + ".");
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public class McftChat extends JavaPlugin {
 							if (message.contains("-on")) {
 								logger.info(pname + "->" + channel + " [Toggled on chat]");
 							} else {
-								logger.info(pname + "->" + channel + ":" + message);
+								logger.info(channel + pname + ":" + message);
 							}
 						}
 						return true;
